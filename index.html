@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlantSecrets, le savoir des plantes partagé</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============ 1. COULEURS ET MESURES ============ */
+:root{
+  color-scheme:light;
+  --nav:#1c3d2b; --foot:#2c2f2e;                         /* nav vert foncé, footer gris foncé */
+  --bg:#fff; --fg:#1b231e; --mu:#586159; --line:#dfe3df; /* main blanc */
+  --soft:#f5f6f4; --ac:#2f5d3f; --tint:#e8f0ea; --warn:#fdf7e7; --warn-line:#e4d3a0;
+  --rh:3.5rem;                                           /* hauteur d’une ligne de liste */
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+/* ============ 2. BASE ============ */
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 4.5rem)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.6 'Source Sans 3',system-ui,sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--nav);z-index:60}
+h1,h2,h3{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:600;line-height:1.2}
+p,dl,dd,figure,blockquote{margin:0} a{color:inherit;text-decoration:none} button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid #b4801a;outline-offset:2px}
+.mu{color:var(--mu)} .lat{font-style:italic} .small{font-size:.85rem}
+
+/* ============ 3. STRUCTURE ============ */
+.wrap{max-width:68rem;margin:0 auto;padding:0 1.5rem}
+.sec{padding:4.5rem 0;border-top:1px solid var(--line)}
+.head h2{font-size:clamp(1.7rem,3.5vw,2.4rem)}
+.head p{max-width:42rem;margin-top:.75rem;color:var(--mu)}
+
+/* ============ 4. NAVIGATION ============ */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--nav);color:#f3f6f3}
+.nav .wrap{height:4rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+.logo{font:600 1.3rem 'Source Serif 4',Georgia,serif}
+.menu{display:flex;gap:2rem;font-size:.95rem}.menu a:hover{text-decoration:underline}
+@media(max-width:720px){.menu{display:none}}
+
+/* ============ 5. COMPOSANTS ============ */
+.btn{display:inline-block;padding:.65rem 1.25rem;border:1px solid var(--ac);border-radius:4px;background:var(--ac);color:#fff;font-weight:600;font-size:.95rem;cursor:pointer}
+.btn:hover{background:#244a32}
+.btn.line{background:#fff;color:var(--ac)}.btn.line:hover{background:var(--tint)}
+.btn.sm{padding:.4rem .85rem;font-size:.85rem}
+.nav .btn{background:transparent;border-color:#8fa996;color:#fff}.nav .btn:hover{background:#ffffff1a}
+.link{padding:0;border:0;background:none;color:var(--ac);text-decoration:underline;cursor:pointer}
+.inp{width:100%;padding:.75rem .9rem;border:1px solid #c4cbc5;border-radius:4px;background:#fff;color:var(--fg);font:inherit}
+.note{padding:1rem 1.25rem;border:1px solid var(--warn-line);border-radius:4px;background:var(--warn);font-size:.92rem}
+.kv{display:grid;grid-template-columns:12rem 1fr;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.kv dt{font-weight:600}
+
+/* catalogue de plantes : une ligne par plante */
+.cat{margin-top:1.25rem;border-top:2px solid var(--fg)}
+.cat .line-head,.cat .item{display:grid;grid-template-columns:2fr 1.3fr 2fr auto;gap:1.5rem;align-items:center;padding:1rem .25rem;border-bottom:1px solid var(--line)}
+.cat .line-head{padding:.6rem .25rem;font-size:.82rem;font-weight:600;color:var(--mu)}
+.item b{display:block;font:600 1.15rem 'Source Serif 4',Georgia,serif}
+.item small{display:block;font-size:.85rem;color:var(--mu)}
+@media(max-width:760px){.cat .line-head{display:none}.cat .item{grid-template-columns:1fr;gap:.4rem}.item .btn{justify-self:start}}
+
+/* ============ 6. SECTIONS ============ */
+/* accueil */
+.hero{padding:6rem 0 5rem}
+.hero h1{max-width:24ch;font-size:clamp(2.3rem,5vw,3.6rem);letter-spacing:-.01em}
+.hero .lead{max-width:38rem;margin-top:1.5rem;font-size:1.15rem;color:var(--mu)}
+.hero .acts{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:2.25rem}
+
+/* trouver une plante */
+.finder{margin-top:2rem;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tabs{display:flex;background:var(--soft);border-bottom:1px solid var(--line)}
+.tab{margin-bottom:-1px;padding:.9rem 1.5rem;border:0;border-bottom:2px solid transparent;background:none;font-weight:600;color:var(--mu);cursor:pointer}
+.tab[aria-selected=true]{background:#fff;border-bottom-color:var(--ac);color:var(--ac)}
+.panel{padding:1.75rem}
+.lbl{display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:.9rem;font-weight:600}
+#search{margin-bottom:1.5rem}
+.lists{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:720px){.lists{grid-template-columns:1fr}.tab{padding:.9rem 1rem}}
+/* listes : 4 lignes visibles, le reste défile */
+.list{position:relative;max-height:calc(4*var(--rh) + 2px);overflow-y:auto;border:1px solid var(--line);border-radius:4px}
+.row{display:block;width:100%;height:var(--rh);padding:.45rem 1rem;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;cursor:pointer}
+.row span{display:block;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row b{font-weight:600}.row small{display:block;font-size:.82rem;color:var(--mu);overflow:hidden;text-overflow:ellipsis}
+.row:hover{background:var(--soft)}
+.row.on{background:var(--tint);box-shadow:inset 3px 0 0 var(--ac)}
+.hint{margin-top:.6rem;font-size:.82rem;color:var(--mu)}
+.results{margin-top:2rem;padding-top:1.75rem;border-top:1px solid var(--line)}
+.results h3{font-size:1.4rem}.results .note{margin-top:1rem}
+
+/* témoignages */
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:2.5rem 2rem;margin-top:2.5rem}
+.quote{padding-top:1rem;border-top:2px solid var(--ac)}
+.quote blockquote{font:400 1.1rem/1.65 'Source Serif 4',Georgia,serif}
+.quote figcaption{margin-top:1rem;font-size:.9rem}
+#sheet .quotes{margin-top:1rem}
+
+/* mission */
+.split{display:grid;grid-template-columns:1fr 1.2fr;gap:4rem}
+.pledge{padding:1rem 0;border-bottom:1px solid var(--line)}.pledge:first-child{padding-top:0}
+.pledge b{font-family:'Source Serif 4',Georgia,serif;font-size:1.1rem}.pledge p{margin-top:.2rem;color:var(--mu);font-size:.95rem}
+.sec .note.big{margin-top:2.5rem}
+@media(max-width:800px){.split{grid-template-columns:1fr;gap:2rem}}
+
+/* contribuer */
+.cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1.5rem}
+.cta h2{max-width:34rem;font-size:1.7rem}.cta p{max-width:34rem;margin-top:.5rem;color:var(--mu)}
+
+/* pied de page */
+.foot{background:var(--foot);color:#d5d9d6;font-size:.92rem}
+.foot .wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:2.5rem;padding-top:3.5rem;padding-bottom:3.5rem}
+.foot .logo{color:#fff}.foot nav{display:grid;gap:.5rem;align-content:start}.foot a:hover{text-decoration:underline}
+@media(max-width:720px){.foot .wrap{grid-template-columns:1fr}}
+
+/* fiche plante, formulaire, message */
+dialog{width:min(860px,94vw);max-height:90vh;margin:auto;padding:0;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--fg)}
+dialog::backdrop{background:#0008}
+.sheet{padding:2rem}
+.sheet-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;padding-bottom:1.25rem;border-bottom:2px solid var(--fg)}
+.sheet-head h2{font-size:2.2rem}
+.blk{margin-top:1.75rem}.blk h3{margin-bottom:.5rem;font-size:1.25rem}
+.blk.note h3{font-size:1.1rem}
+#shareForm{display:grid;gap:1rem;padding:2rem}#shareForm label{display:flex;gap:.5rem;font-size:.9rem}#shareForm .row2{display:flex;gap:.75rem}
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);z-index:70;padding:.75rem 1.25rem;border-radius:4px;background:var(--nav);color:#fff;font-size:.9rem}
+@media(max-width:600px){.kv{grid-template-columns:1fr;gap:.1rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ============ NAVIGATION ============ -->
+<header class="nav"><div class="wrap">
+  <a href="#top" class="logo">PlantSecrets</a>
+  <nav class="menu"><a href="#trouver">Trouver une plante</a><a href="#temoignages">Témoignages</a><a href="#mission">Notre mission</a></nav>
+  <button class="btn" data-share>Partager</button>
+</div></header>
+
+<main>
+  <!-- ============ ACCUEIL ============ -->
+  <section class="hero" id="top"><div class="wrap">
+    <h1>Apprendre des choses sur les plantes, les partager gratuitement.</h1>
+    <p class="lead">PlantSecrets préserve et documente les savoirs sur les plantes du monde entier : recettes transmises de génération en génération, récits recueillis sur le terrain, sources citées.</p>
+    <div class="acts"><a href="#trouver" class="btn" data-tab="need">Choisir par besoin</a><a href="#trouver" class="btn line" data-tab="all">Voir toutes les plantes</a></div>
+  </div></section>
+
+  <!-- ============ TROUVER UNE PLANTE ============ -->
+  <section class="sec" id="trouver"><div class="wrap">
+    <div class="head"><h2>Trouver une plante</h2>
+      <p>Ce sont des savoirs traditionnels, pas des conseils médicaux. Choisissez ce qui vous gêne, ou parcourez toutes les plantes.</p></div>
+    <div class="finder">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-need" data-tab="need" aria-selected="true">Choisir par besoin</button>
+        <button class="tab" role="tab" id="tab-all" data-tab="all" aria-selected="false">Voir toutes les plantes</button>
+      </div>
+
+      <div class="panel" id="panel-need" role="tabpanel" aria-labelledby="tab-need">
+        <label class="lbl" for="search">Rechercher une gêne ou une maladie</label>
+        <input id="search" type="search" class="inp" autocomplete="off" placeholder="Par exemple : mal de tête, toux, ballonnements, mycose…">
+        <div class="lists">
+          <div><div class="lbl">Partie du corps <span class="mu" id="zoneCount"></span></div><div class="list" id="zones"></div></div>
+          <div><div class="lbl">Gêne ou maladie <span class="mu" id="ailCount"></span></div><div class="list" id="ails" aria-live="polite"></div></div>
+        </div>
+        <p class="hint">Chaque liste affiche 4 lignes : faites défiler pour voir la suite.</p>
+        <div class="results">
+          <h3 id="resultTitle"></h3>
+          <p class="note" id="warn" hidden><b>À savoir.</b> Ces usages sont traditionnels et ne remplacent pas un avis médical. Pour une maladie diagnostiquée, parlez-en à votre médecin avant toute plante. Consultez vite en cas de douleur intense ou soudaine, de fièvre élevée, de difficulté à respirer, de sang dans les selles ou les urines, ou si les symptômes durent.</p>
+          <div id="needResults"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-all" role="tabpanel" aria-labelledby="tab-all" hidden>
+        <p class="mu" id="allCount"></p>
+        <div id="allPlants"></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ============ TÉMOIGNAGES ============ -->
+  <section class="sec" id="temoignages"><div class="wrap">
+    <div class="head"><h2>Le savoir des peuples mérite d’être partagé.</h2>
+      <p>Des récits recueillis sur le terrain, publiés avec le consentement des personnes. Prénoms et récits fictifs dans cette maquette.</p></div>
+    <div class="quotes" id="quotes"></div>
+  </div></section>
+
+  <!-- ============ MISSION ============ -->
+  <section class="sec" id="mission"><div class="wrap">
+    <div class="split">
+      <div class="head"><h2>Que des connaissances qui pourraient aider quelqu’un ne restent pas inconnues.</h2>
+        <p>Nous valorisons les savoirs traditionnels, les recettes familiales et les témoignages recueillis auprès de celles et ceux qui les pratiquent. Tout est gratuit, tout est sourcé autant que possible.</p></div>
+      <div id="pledges"></div>
+    </div>
+    <p class="note big"><b>Avertissement.</b> Les informations proposées sont éducatives et ne remplacent ni un diagnostic ni un traitement médical. Certaines plantes peuvent présenter des risques, des interactions ou des contre-indications. Demandez l’avis d’un professionnel de santé, surtout en cas de grossesse, d’enfant ou de traitement en cours.</p>
+  </div></section>
+
+  <!-- ============ CONTRIBUER ============ -->
+  <section class="sec" id="contribuer"><div class="wrap cta">
+    <div><h2>Vous connaissez une plante que le monde devrait découvrir ?</h2>
+      <p>Partagez vos connaissances, recettes traditionnelles, expériences et témoignages. Nous citons vos sources et respectons vos conditions.</p></div>
+    <button class="btn" data-share>Partager une connaissance</button>
+  </div></section>
+</main>
+
+<!-- ============ PIED DE PAGE ============ -->
+<footer class="foot"><div class="wrap">
+  <div><p class="logo">PlantSecrets</p>
+    <p style="margin-top:.75rem;max-width:24rem">Une plateforme gratuite pour découvrir et transmettre les savoirs sur les plantes médicinales et leurs usages traditionnels.</p></div>
+  <nav><a href="#trouver">Trouver une plante</a><a href="#temoignages">Témoignages</a><a href="#mission">Notre mission</a></nav>
+  <nav><a href="#contribuer">Contact</a><a href="#top">Mentions légales</a><p class="small" style="opacity:.7;margin-top:.5rem">Maquette, données fictives.</p></nav>
+</div></footer>
+
+<!-- ============ FENÊTRES ============ -->
+<dialog id="sheet" aria-label="Fiche de la plante"><div id="sheetBody"></div></dialog>
+<dialog id="share" aria-label="Partager une connaissance"><form id="shareForm">
+  <h2>Partager une connaissance</h2>
+  <input class="inp" required placeholder="Votre prénom ou pseudonyme">
+  <input class="inp" required placeholder="Nom de la plante, pays et région">
+  <textarea class="inp" rows="4" required placeholder="Votre recette, votre expérience, votre source"></textarea>
+  <label><input type="checkbox" required> Je consens à la publication de ce témoignage.</label>
+  <div class="row2"><button class="btn">Envoyer</button><button type="button" class="btn line" data-close>Annuler</button></div>
+</form></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ============ 1. DONNÉES ============ */
+
+// [id, libellé, exemples]
+const ZONES=[
+  ['tete','Tête et cerveau','cerveau, crâne, migraines'],['yeux','Yeux et paupières','vision, conjonctivite, irritation'],
+  ['oreilles','Oreilles','audition, otite, acouphènes'],['nez','Nez et sinus','sinusite, rhinite, allergies'],
+  ['bouche','Bouche, dents et langue','caries, aphtes, gingivite'],['cuir','Cuir chevelu','pellicules, démangeaisons'],
+  ['cou','Cou et cervicales','raideurs, douleurs cervicales'],['gorge','Gorge et amygdales','angine, pharyngite, laryngite'],
+  ['thyroide','Thyroïde','hypothyroïdie, hyperthyroïdie'],['ganglions','Ganglions lymphatiques','ganglions gonflés, infections'],
+  ['epaules','Épaules','tendinite, douleurs articulaires'],['poitrine','Poitrine et seins','douleurs mammaires, allaitement'],
+  ['coeur','Cœur','hypertension, troubles cardiaques'],['poumons','Poumons et bronches','asthme, bronchite, pneumonie'],
+  ['oesophage','Œsophage','reflux, brûlures'],['estomac','Estomac','gastrite, ulcère, nausées'],
+  ['intestin','Intestins','diarrhée, constipation'],['colon','Côlon','troubles du transit, colite'],
+  ['foie','Foie','hépatite, maladies hépatiques'],['pancreas','Pancréas','pancréatite, diabète'],
+  ['bile','Vésicule biliaire','calculs biliaires'],['appendice','Appendice','appendicite'],
+  ['rectum','Rectum et anus','hémorroïdes, fissures'],['reins','Reins','calculs rénaux, infections rénales'],
+  ['vessie','Vessie et voies urinaires','cystite, infections urinaires'],['reproducteur_f','Appareil reproducteur féminin','règles, endométriose, fibromes'],
+  ['reproducteur_m','Appareil reproducteur masculin','prostate, infections génitales'],['intime','Parties intimes','irritations, santé sexuelle'],
+  ['dos','Dos et colonne vertébrale','lombalgie, douleurs dorsales'],['bras','Bras et avant-bras','douleurs musculaires'],
+  ['coudes','Coudes','tendinite, arthrite'],['poignets','Poignets et mains','canal carpien, peau des mains'],
+  ['bassin','Bassin et hanches','arthrose, douleurs pelviennes'],['cuisses','Cuisses','douleurs musculaires, crampes'],
+  ['jambes','Jambes et mollets','varices, circulation sanguine'],['genoux','Genoux','arthrose, inflammation articulaire'],
+  ['chevilles','Chevilles','entorses, gonflements'],['pieds','Pieds et orteils','mycoses, crevasses'],
+  ['ongles','Ongles','mycoses, ongles fragiles'],['peau','Peau','eczéma, psoriasis, acné'],
+  ['sang','Sang et circulation','anémie, troubles circulatoires'],['immunite','Système immunitaire','défenses, infections'],
+  ['lymphatique','Système lymphatique','lymphœdème'],['rate','Rate','maladies de la rate'],
+  ['hormones','Système hormonal','troubles hormonaux'],['os','Os et squelette','ostéoporose, fractures'],
+  ['muscles','Muscles','crampes, courbatures'],['corps','Corps entier','fatigue, fièvre, stress']
+];
+
+// [id, libellé, partie du corps, plantes, mots-clés de recherche]
+const AILMENTS=[
+  ['mt','Mal de tête, migraine','tete',['camomille'],'cephalee crane'],
+  ['som','Difficulté à dormir','tete',['camomille'],'insomnie sommeil nuit'],
+  ['mem','Mémoire et concentration','tete',['ginkgo'],'oubli'],
+  ['neu','Troubles neurologiques','tete',[],'nerfs neurologie'],
+  ['yx','Yeux fatigués, paupières irritées','yeux',['camomille'],'vue'],
+  ['conj','Conjonctivite','yeux',[],'yeux rouge'],
+  ['ac','Bourdonnements d’oreille','oreilles',['ginkgo'],'acouphene'],
+  ['oti','Otite','oreilles',[],'oreille infection'],
+  ['rh','Rhume, nez bouché','nez',['gingembre','echinacee'],'grippe sinus'],
+  ['sin','Sinusite','nez',[],'sinus inflammation'],
+  ['bch','Aphtes, gencives, mal de bouche','bouche',['aloe','teatree','echinacee'],'dents gencive'],
+  ['car','Caries dentaires','bouche',[],'dents carie'],
+  ['gin','Gingivite','bouche',[],'gencives'],
+  ['gor','Mal de gorge, toux','gorge',['gingembre','echinacee'],'angine voix'],
+  ['ang','Angine','gorge',[],'amygdales infection'],
+  ['thy','Troubles de la thyroïde','thyroide',[],'hormones'],
+  ['ten','Tendinite','epaules',[],'tendon douleur'],
+  ['lait','Allaitement, montée de lait','poitrine',['moringa'],'seins bebe'],
+  ['tens','Tension, circulation du sang','coeur',['hibiscus','ginkgo'],'hypertension'],
+  ['bro','Bronches encombrées','poumons',['gingembre','echinacee'],'toux respiration'],
+  ['ast','Asthme','poumons',[],'respiration souffle'],
+  ['pne','Pneumonie','poumons',[],'infection pulmonaire'],
+  ['refl','Reflux gastro-œsophagien','oesophage',[],'acidite brulures'],
+  ['dig','Digestion lourde, ballonnements','estomac',['gingembre','camomille','chardon'],'gaz'],
+  ['nau','Nausées','estomac',['gingembre'],'vomissement'],
+  ['gas','Gastrite','estomac',[],'inflammation'],
+  ['ulc','Ulcère gastrique','estomac',[],'ulcere'],
+  ['col','Colite','colon',[],'intestin'],
+  ['foie','Foie fatigué','foie',['chardon','hibiscus'],'hepatique'],
+  ['hep','Hépatite','foie',[],'infection hepatique'],
+  ['pan','Pancréatite','pancreas',[],'inflammation'],
+  ['dia','Diabète','pancreas',[],'glycemie sucre'],
+  ['app','Appendicite','appendice',[],'ventre'],
+  ['hem','Hémorroïdes','rectum',[],'anus'],
+  ['rein','Reins et voies urinaires','reins',['hibiscus'],'urine'],
+  ['cal','Calculs rénaux','reins',[],'calcul'],
+  ['cys','Cystite','vessie',[],'infection urinaire'],
+  ['reg','Règles douloureuses','reproducteur_f',['camomille'],'menstruation'],
+  ['end','Endométriose','reproducteur_f',[],'uterus'],
+  ['fib','Fibromes utérins','reproducteur_f',[],'uterus'],
+  ['pro','Troubles de la prostate','reproducteur_m',[],'prostate'],
+  ['lib','Libido, vitalité','intime',['maca'],'sexuel genital'],
+  ['lom','Douleurs et raideur lombaires','dos',['gingembre'],'lumbago'],
+  ['dbo','Boutons dans le dos','dos',['teatree','chardon'],'acne peau'],
+  ['mai','Mains abîmées, petites coupures','poignets',['aloe'],'peau seche'],
+  ['jl','Jambes lourdes','jambes',['ginkgo','hibiscus'],'circulation gonflement'],
+  ['var','Varices','jambes',[],'veines'],
+  ['arti','Articulations douloureuses, arthrose','genoux',['gingembre','moringa'],'arthrose'],
+  ['myc','Mycoses, pied d’athlète','pieds',['teatree'],'champignon ongles'],
+  ['tal','Talons secs, crevasses','pieds',['aloe'],'peau seche'],
+  ['bou','Boutons, acné','peau',['teatree','chardon'],'acne'],
+  ['bru','Brûlures légères, coups de soleil','peau',['aloe'],'soleil'],
+  ['rou','Rougeurs, irritations','peau',['aloe','camomille'],'erytheme couche'],
+  ['ecz','Eczéma','peau',[],'irritation'],
+  ['pso','Psoriasis','peau',[],'plaques'],
+  ['ane','Anémie','sang',[],'fer hemoglobine'],
+  ['imm','Défenses immunitaires','immunite',['echinacee','moringa'],'infections'],
+  ['lym','Lymphœdème','lymphatique',[],'lymphe gonflement'],
+  ['ost','Ostéoporose','os',[],'fragilite'],
+  ['courb','Courbatures, muscles fatigués','muscles',['gingembre','maca'],'douleur tensions'],
+  ['fat','Fatigue, manque d’énergie','corps',['moringa','maca'],'epuisement tonus'],
+  ['str','Stress, nervosité','corps',['camomille'],'anxiete angoisse'],
+  ['fie','Fièvre','corps',[],'temperature'],
+  ['inf','Infection généralisée','corps',[],'organisme']
+];
+
+// n nom, s nom latin, c pays, t type, p parties utilisées, u usages, k [graine, 3 couleurs],
+// pr préparations, how préparation, m utilisation, x précautions, e science
+const PLANTS=[
+{id:'moringa',n:'Moringa',s:'Moringa oleifera',c:'Sénégal, Inde',t:'Arbre',p:['feuilles','graines'],u:['tonique','nutrition'],k:[3,'#2f5d3f','#8fa98a','#d8e4c0'],pr:'Poudre de feuilles, infusion',how:'Feuilles séchées à l’ombre, puis réduites en poudre fine.',m:'Une pincée dans les sauces ou l’eau tiède, selon les récits.',x:'Graines et racines déconseillées pendant la grossesse. Avis médical si traitement en cours.',e:'Nombreuses études précliniques, essais humains rares : efficacité non établie.'},
+{id:'gingembre',n:'Gingembre',s:'Zingiber officinale',c:'Inde, Chine',t:'Rhizome',p:['rhizome'],u:['digestion','nausées','refroidissement'],k:[7,'#8a6a2f','#d9b45a','#f0dca0'],pr:'Décoction, tranches fraîches',how:'Tranches fines mijotées 10 minutes dans l’eau, parfois avec du miel.',m:'En boisson chaude, par petites quantités, après les repas.',x:'Prudence avec les anticoagulants et avant une opération. Peut irriter l’estomac.',e:'Preuves modestes pour les nausées ; les autres usages sont peu démontrés.'},
+{id:'aloe',n:'Aloe vera',s:'Aloe vera',c:'Égypte, Maroc',t:'Succulente',p:['gel des feuilles'],u:['peau','brûlures légères','bouche'],k:[11,'#3d6b4f','#7fb08a','#c4e0c2'],pr:'Gel frais, macération',how:'Feuille fendue, gel transparent récupéré en évitant le latex jaune.',m:'Gel appliqué en couche fine sur la peau saine, selon les témoignages.',x:'Le latex jaune est un laxatif puissant : ne pas ingérer. Tester sur une petite zone.',e:'Gel local étudié pour brûlures légères ; risques documentés pour le latex.'},
+{id:'camomille',n:'Camomille',s:'Matricaria chamomilla',c:'Hongrie, Allemagne',t:'Fleur',p:['fleurs'],u:['sommeil','digestion','détente'],k:[5,'#6f8f5a','#e8dfa8','#f6f0e2'],pr:'Infusion, compresses tièdes',how:'Une cuillère de fleurs séchées infusée 10 minutes à couvert.',m:'Tisane le soir ; compresses tièdes sur paupières fermées uniquement.',x:'Allergie possible chez les personnes sensibles aux astéracées. Ne jamais mettre dans l’œil.',e:'Données limitées ; quelques essais sur l’anxiété légère et la digestion.'},
+{id:'ginkgo',n:'Ginkgo',s:'Ginkgo biloba',c:'Chine, Japon',t:'Arbre',p:['feuilles'],u:['mémoire','circulation','acouphènes'],k:[13,'#7a8a2a','#d6c24a','#f0e9a8'],pr:'Infusion de feuilles',how:'Feuilles séchées infusées brièvement ; les graines crues sont toxiques.',m:'Usage occasionnel en tisane dans la tradition chinoise.',x:'Interactions avec anticoagulants et antiépileptiques. Graines : toxiques.',e:'Essais contradictoires sur la mémoire et les acouphènes.'},
+{id:'hibiscus',n:'Hibiscus (bissap)',s:'Hibiscus sabdariffa',c:'Mali, Sénégal',t:'Fleur',p:['calices'],u:['circulation','rafraîchissant','reins'],k:[17,'#7a2e3a','#c0505f','#e8a0a8'],pr:'Boisson froide, infusion',how:'Calices rouges infusés, filtrés, puis sucrés et servis frais.',m:'Boisson de partage lors des repas et fêtes.',x:'Peut abaisser la tension : prudence si hypotension ou traitement. À éviter pendant la grossesse.',e:'Quelques essais montrent une baisse modeste de la tension ; qualité variable.'},
+{id:'chardon',n:'Chardon-Marie',s:'Silybum marianum',c:'France, Italie',t:'Herbe',p:['graines'],u:['foie','digestion','peau'],k:[19,'#5a6b8a','#9bb0c8','#d8c8e0'],pr:'Graines moulues, infusion',how:'Graines écrasées puis infusées 15 minutes.',m:'En cures courtes, selon la pharmacopée européenne.',x:'Allergie possible aux astéracées. Avis médical en cas de maladie du foie.',e:'Résultats hétérogènes sur le foie ; données insuffisantes pour conclure.'},
+{id:'maca',n:'Maca',s:'Lepidium meyenii',c:'Pérou, Bolivie',t:'Racine',p:['racine'],u:['énergie','vitalité','équilibre'],k:[23,'#8a5a2f','#c9965a','#ecd3a8'],pr:'Poudre, bouillie',how:'Racines séchées en altitude puis moulues.',m:'Mélangée aux boissons ou bouillies dans les Andes.',x:'Avis médical en cas de troubles hormonaux, de thyroïde ou de grossesse.',e:'Petits essais sur le bien-être et la libido ; preuves faibles.'},
+{id:'echinacee',n:'Échinacée',s:'Echinacea purpurea',c:'États-Unis, Canada',t:'Fleur',p:['racines','fleurs'],u:['immunité','gorge','refroidissement'],k:[29,'#8a3f6f','#c07aa8','#e8c4dc'],pr:'Décoction, teinture',how:'Racines mijotées doucement ; fleurs en infusion.',m:'Utilisée par plusieurs peuples des Plaines, selon les récits.',x:'À éviter en cas de maladie auto-immune. Allergies possibles. Interactions médicamenteuses.',e:'Résultats mitigés sur la prévention des rhumes.'},
+{id:'teatree',n:'Arbre à thé',s:'Melaleuca alternifolia',c:'Australie',t:'Arbre',p:['feuilles'],u:['peau','purifiant','bouche'],k:[31,'#2a6a6a','#5fa8a0','#bfe0d8'],pr:'Huile essentielle diluée, feuilles écrasées',how:'Feuilles écrasées sur la peau ; l’huile se dilue toujours.',m:'Usage externe seulement, utilisé par les Bundjalung.',x:'Toxique si avalé. Toujours diluer. Irritations possibles.',e:'Usage externe étudié (acné, mycoses) ; toxique si ingéré.'}
+];
+
+const QUOTES=[
+{n:'Awa',w:'Casamance, Sénégal',pl:'moringa',q:'Ma grand-mère séchait les feuilles sous le manguier. Chez nous, on en met dans le riz pour donner de la force aux enfants.',d:'Collecté en mars 2025, avec consentement'},
+{n:'Meera',w:'Kerala, Inde',pl:'gingembre',q:'Au premier frisson, on prépare une boisson au gingembre et au miel. Chaque famille a sa propre recette.',d:'Entretien à domicile, 2024'},
+{n:'Fatou',w:'Ségou, Mali',pl:'hibiscus',q:'Le bissap, c’est la boisson du partage. On le sert glacé aux invités, toujours.',d:'Marché de Ségou, 2025'},
+{n:'Luz',w:'Cusco, Pérou',pl:'maca',q:'Dans nos hauteurs, on mange la maca depuis toujours. On ne la considère pas comme un remède, c’est de la nourriture.',d:'Atelier communautaire, 2024'},
+{n:'Ilona',w:'Plaine hongroise',pl:'camomille',q:'On la cueille en juin, au lever du jour. Une tasse le soir, et la maison devient calme.',d:'Récit familial, 2025'}
+];
+
+const PLEDGES=[
+['Accès gratuit','Toutes les connaissances sont consultables sans compte ni abonnement.'],
+['Sources indiquées','Nous citons nos références autant que possible.'],
+['Respect des cultures','Les savoirs traditionnels sont présentés avec leur contexte et leurs gardiens.'],
+['Consentement','Chaque témoignage est publié avec l’accord de la personne.'],
+['Savoirs sensibles protégés','Certains savoirs sacrés ou restreints ne sont pas publiés.'],
+['Précautions sanitaires','Risques et contre-indications sont toujours affichés.']
+];
+const SOURCES=['Monographies de plantes médicinales (OMS)','Enquêtes de terrain PlantSecrets (exemples fictifs)','Pharmacopées traditionnelles régionales'];
+
+/* ============ 2. OUTILS ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const norm=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const plant=id=>PLANTS.find(p=>p.id===id);
+const zoneName=id=>ZONES.find(z=>z[0]===id)?.[1]||'';
+const plural=(n,w)=>`${n} ${w}${n>1?'s':''}`;
+const toast=t=>{const e=$('#toast');e.textContent=t;e.hidden=false;setTimeout(()=>e.hidden=true,3200)};
+const reveal=l=>{const r=l.querySelector('.on');if(r)l.scrollTop=Math.max(0,r.offsetTop-l.clientHeight/2+r.offsetHeight/2)};
+
+/* ============ 3. MODÈLES HTML ============ */
+const catalogue=list=>`<div class="cat"><div class="line-head"><span>Plante</span><span>Origine</span><span>Usages traditionnels</span><span></span></div>${list.map(p=>`<div class="item"><div><b>${p.n}</b><span class="lat mu">${p.s}</span></div><p>${p.c}<small>${p.t}</small></p><p>${p.u.join(', ')}</p><button class="btn line sm" data-open="${p.id}">Voir la fiche</button></div>`).join('')}</div>`;
+
+const quoteCard=t=>{const p=plant(t.pl);return `<figure class="quote"><blockquote>« ${t.q} »</blockquote><figcaption><b>${t.n}</b>, ${t.w}<br><span class="mu">${t.d}</span><br>Plante : <button class="link" data-open="${p.id}">${p.n}</button></figcaption></figure>`};
+
+const kv=(k,v)=>`<div class="kv"><dt>${k}</dt><dd>${v}</dd></div>`;
+function sheet(id){
+  const p=plant(id),ts=QUOTES.filter(t=>t.pl===id);
+  $('#sheetBody').innerHTML=`<div class="sheet">
+  <div class="sheet-head"><div><p class="mu">${p.c}</p><h2>${p.n}</h2><p class="lat mu">${p.s}</p></div><button class="btn line sm" data-close>Fermer</button></div>
+  <dl class="blk">${kv('Type',p.t)}${kv('Parties utilisées',p.p.join(', '))}${kv('Usages traditionnels rapportés',p.u.join(', '))}</dl>
+  <div class="blk"><h3>Savoir traditionnel</h3><dl>${kv('Préparations',p.pr)}${kv('Mode de préparation',p.how)}${kv('Mode d’utilisation',p.m)}</dl></div>
+  <div class="blk"><h3>Ce que dit la science</h3><p>${p.e}</p><p class="mu small" style="margin-top:.4rem">Un usage traditionnel n’est pas un traitement dont l’efficacité serait garantie.</p></div>
+  <div class="blk note"><h3>Précautions et contre-indications</h3><p>${p.x}</p></div>
+  <div class="blk"><h3>Témoignages du terrain</h3>${ts.length?`<div class="quotes">${ts.map(quoteCard).join('')}</div>`:'<p class="mu">Pas encore de témoignage pour cette plante. Vous en avez un ? Partagez-le.</p>'}</div>
+  <p class="blk mu small"><b>Sources :</b> ${SOURCES.join(' ; ')}</p></div>`;
+  if(!$('#sheet').open) $('#sheet').showModal();
+  $('#sheet').scrollTop=0;
+}
+
+/* ============ 4. TROUVER UNE PLANTE ============ */
+const S={tab:'need',zone:'tete',ailment:'mt',query:''};
+
+function showTab(tab){
+  S.tab=tab;
+  ['need','all'].forEach(t=>{$('#panel-'+t).hidden=t!==tab;$('#tab-'+t).setAttribute('aria-selected',t===tab)});
+}
+
+function renderZones(){
+  $$('#zones .row').forEach(b=>b.classList.toggle('on',b.dataset.z===S.zone));
+}
+
+function renderAilments(){
+  const box=$('#ails'),top=box.scrollTop;
+  const list=AILMENTS.filter(a=>S.query?norm(a[1]+' '+a[4]).includes(S.query):(!S.zone||a[2]===S.zone));
+  $('#ailCount').textContent=plural(list.length,'résultat');
+  box.innerHTML=list.length?list.map(a=>`<button class="row${a[0]===S.ailment?' on':''}" data-a="${a[0]}"><span><b>${a[1]}</b><small>${zoneName(a[2])}, ${a[3].length?plural(a[3].length,'plante'):'à documenter'}</small></span></button>`).join('')
+    :'<p class="mu" style="padding:1rem;font-size:.9rem">Rien de documenté pour cette recherche. Essayez un autre mot, ou partagez une plante que vous connaissez.</p>';
+  box.scrollTop=top;
+}
+
+function renderResults(){
+  const a=AILMENTS.find(x=>x[0]===S.ailment);
+  const ids=a?a[3]:[...new Set(AILMENTS.filter(x=>x[2]===S.zone).flatMap(x=>x[3]))];
+  const label=a?a[1]:zoneName(S.zone);
+  $('#warn').hidden=!label;
+  $('#resultTitle').textContent=label?`Plantes traditionnellement citées pour : ${label.toLowerCase()}`:'';
+  $('#needResults').innerHTML=!label?'<p class="mu" style="margin-top:.5rem">Choisissez une partie du corps ou une gêne pour voir les plantes.</p>'
+    :ids.length?catalogue(ids.map(plant))
+    :'<p class="mu" style="margin-top:1rem">Aucune plante documentée pour l’instant. Vous en connaissez une ? <button class="link" data-share>Partagez-la</button>.</p>';
+}
+
+const renderNeed=()=>{renderZones();renderAilments();renderResults()};
+
+/* ============ 5. ÉVÉNEMENTS ============ */
+document.addEventListener('click',e=>{
+  const hit=s=>e.target.closest(s);
+  if(hit('[data-tab]')) showTab(hit('[data-tab]').dataset.tab);
+  if(hit('[data-z]')){S.zone=hit('[data-z]').dataset.z;S.ailment='';S.query='';$('#search').value='';renderNeed();$('#ails').scrollTop=0}
+  if(hit('[data-a]')){const a=AILMENTS.find(x=>x[0]===hit('[data-a]').dataset.a);S.ailment=a[0];S.zone=a[2];renderNeed();reveal($('#zones'))}
+  if(hit('[data-open]')) sheet(hit('[data-open]').dataset.open);
+  if(hit('[data-close]')) hit('dialog').close();
+  if(hit('[data-share]')) $('#share').showModal();
+});
+$('#search').addEventListener('input',e=>{
+  const v=norm(e.target.value).trim();S.query=v.length>1?v:'';
+  if(S.query){S.ailment='';S.zone=''}
+  renderNeed();$('#ails').scrollTop=0;
+});
+$$('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+$('#shareForm').addEventListener('submit',e=>{e.preventDefault();$('#share').close();e.target.reset();toast('Merci ! Dans cette maquette, rien n’est envoyé.')});
+
+/* ============ 6. DÉMARRAGE ============ */
+$('#zones').innerHTML=ZONES.map(([id,l,h])=>`<button class="row" data-z="${id}"><span><b>${l}</b><small>${h}</small></span></button>`).join('');
+$('#zoneCount').textContent=plural(ZONES.length,'partie');
+$('#allCount').textContent=plural(PLANTS.length,'plante');
+$('#allPlants').innerHTML=catalogue(PLANTS);
+$('#quotes').innerHTML=QUOTES.map(quoteCard).join('');
+$('#pledges').innerHTML=PLEDGES.map(([t,d])=>`<div class="pledge"><b>${t}</b><p>${d}</p></div>`).join('');
+renderNeed();
+</script>
+</body>
+</html>
